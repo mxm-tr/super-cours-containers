@@ -1,0 +1,46 @@
+services:
+  nginx-proxy:
+    container_name: nginx-reverse-proxy
+    image: nginxproxy/nginx-proxy
+    ports:
+      - "80:80"
+    networks:
+      - todo-app
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  app:
+    image: docker.io/mxmtr86/docker-course:app
+    build:
+      context: .
+      target: app
+    environment:
+      VIRTUAL_HOST: ynov-le-sang.duckdns.org
+      VIRTUAL_PORT: 3000
+
+      MYSQL_HOST: mysql
+      MYSQL_USER: root 
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: todos
+    networks:
+      - todo-app
+    restart: on-failure
+
+  mysql:
+    image: docker.io/mxmtr86/docker-course:mysql
+    build:
+      context: .
+      target: db
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: todos
+    networks:
+      - todo-app
+
+networks:
+  todo-app:
+    driver: bridge
+volumes:
+  todo-mysql-data:

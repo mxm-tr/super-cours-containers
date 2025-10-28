@@ -1,0 +1,49 @@
+- hosts: myhosts
+  vars:
+    docker_plugins:
+      - type: authz
+        alias: opa-docker-authz
+        name: openpolicyagent/opa-docker-authz-v2:0.9
+        args: opa-args="-policy-file /opa/policies/authz.rego"
+    docker_enable_audit: true
+    docker_daemon_config:
+      icc: false
+      log-driver: journald
+      userns-remap: default
+      live-restore: true
+      userland-proxy: false
+      no-new-privileges: true
+  roles:
+    - haxorof.docker_ce
+
+- name: Deploy Docker Compose application
+  hosts: myhosts
+  vars:
+    project_path: /opt/myapp
+    docker_username: mxmtr86            # or your registry username
+    docker_token: xxx              # or use Vault/encrypted var
+
+  tasks:
+    - name: Ensure project directory exists
+      file:
+        path: "{{ project_path }}"
+        state: directory
+
+    - name: Copy docker-compose file
+      copy:
+        src: docker-compose.yml
+        dest: "{{ project_path }}/docker-compose.yml"
+        mode: "0644"
+
+    - name: Log in to Docker registry with token
+      community.docker.docker_login:
+        username: "{{ docker_username }}"
+        password: "{{ docker_token }}"
+      # no_log: true    # hides the token from logs for security
+
+    - name: Pull and start containers
+      command: docker compose up -d
+      args:
+        chdir: "{{ project_path }}"
+  tags:
+    - app
