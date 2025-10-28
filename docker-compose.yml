@@ -2,12 +2,35 @@ services:
   nginx-proxy:
     container_name: nginx-reverse-proxy
     image: nginxproxy/nginx-proxy
+    restart: always
+    environment:
+      ENABLE_IPV6: false # https://github.com/nginx-proxy/nginx-proxy/tree/main/docs#ipv6-nat
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - todo-app
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - vhosts:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs
+
+  nginx-proxy-acme:
+    container_name: nginx-proxy-acme
+    image: nginxproxy/acme-companion:latest
+    restart: unless-stopped
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-reverse-proxy
+      NGINX_DOCKER_GEN_CONTAINER: nginx-reverse-proxy
+      ACME_CA_URI: https://acme-staging-v02.api.letsencrypt.org/directory # For testing
+    networks:
+      - todo-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    volumes_from:
+      - nginx-proxy
 
   app:
     image: docker.io/mxmtr86/docker-course:app
@@ -16,10 +39,13 @@ services:
       target: app
     environment:
       VIRTUAL_HOST: ynov-le-sang.duckdns.org
+      LETSENCRYPT_HOST: ynov-le-sang.duckdns.org
+      LETSENCRYPT_EMAIL: "maxime.hubert@ynov.com"
+
       VIRTUAL_PORT: 3000
 
       MYSQL_HOST: mysql
-      MYSQL_USER: root 
+      MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: todos
     networks:
@@ -44,3 +70,7 @@ networks:
     driver: bridge
 volumes:
   todo-mysql-data:
+  html: {}
+  acme: {}
+  certs: {}
+  vhosts: {}
