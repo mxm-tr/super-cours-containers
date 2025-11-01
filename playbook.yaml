@@ -42,7 +42,7 @@
       # no_log: true    # hides the token from logs for security
 
     - name: Pull and start containers
-      command: docker compose up -d
+      command: docker compose --profile production up -d
       args:
         chdir: "{{ project_path }}"
   tags:

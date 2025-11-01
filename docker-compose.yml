@@ -10,6 +10,7 @@ services:
       - "443:443"
     networks:
       - todo-app
+    profiles: ["production"]
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - vhosts:/etc/nginx/vhost.d
@@ -26,6 +27,7 @@ services:
       ACME_CA_URI: https://acme-staging-v02.api.letsencrypt.org/directory # For testing
     networks:
       - todo-app
+    profiles: ["production"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - acme:/etc/acme.sh
@@ -48,6 +50,9 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: todos
+    # When running locally, map port 3000 to access without nginx
+    # ports:
+    #   - "3000:3000"
     networks:
       - todo-app
     restart: on-failure
