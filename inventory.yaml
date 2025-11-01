@@ -1,5 +1,5 @@
 myhosts:
   hosts:
     my_host_01:
-      ansible_host: 68.183.43.63
+      ansible_host: 178.128.45.13
       ansible_user: root

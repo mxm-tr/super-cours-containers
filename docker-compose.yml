@@ -38,8 +38,8 @@ services:
       context: .
       target: app
     environment:
-      VIRTUAL_HOST: ynov-le-sang.duckdns.org
-      LETSENCRYPT_HOST: ynov-le-sang.duckdns.org
+      VIRTUAL_HOST: ynov.mxmtr.ovh
+      LETSENCRYPT_HOST: ynov.mxmtr.ovh
       LETSENCRYPT_EMAIL: "maxime.hubert@ynov.com"
 
       VIRTUAL_PORT: 3000
